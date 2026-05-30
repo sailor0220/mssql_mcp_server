@@ -546,10 +546,10 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             conn = pymssql.connect(**config)
             cursor = conn.cursor()
             
-            # Generate table name: uftemp + uuid + 6 random chars
+            # Generate table name: uftemp_uuid_random6
             unique_id = str(uuid.uuid4()).replace('-', '')[:8]
             random_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
-            table_name = f"uftemp{unique_id}{random_suffix}"
+            table_name = f"uftemp_{unique_id}_{random_suffix}"
             
             logger.info(f"Generated temp table name: {table_name}")
             
@@ -775,12 +775,8 @@ EXEC sp_executesql @sql,
             result_text += "=" * 50 + "\n"
             result_text += ",".join(columns) + "\n"
             
-            # Limit output to first 100 rows
-            limited_rows = rows[:100]
-            result_text += "\n".join([",".join(map(str, row)) for row in limited_rows])
-            
-            if len(rows) > 100:
-                result_text += f"\n... and {len(rows) - 100} more rows"
+            # Return all rows (no limit)
+            result_text += "\n".join([",".join(map(str, row)) for row in rows])
             
             cursor.close()
             conn.close()
